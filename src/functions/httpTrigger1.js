@@ -1,9 +1,9 @@
-const fetch = require('node-fetch');
 const { app } = require('@azure/functions');
-
+const fetch = require('node-fetch');
 app.http('httpTrigger1', {
     methods: ['GET', 'POST'],
     authLevel: 'anonymous',
+    route: 'products/{category:alpha}/{id:int?}',
     handler: async (request, context) => {
         context.log(`HTTP function processed request for URL "${request.url}"`);
 
