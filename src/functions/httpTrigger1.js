@@ -1,29 +1,35 @@
 const fetch = require('node-fetch');
+const { app } = require('@azure/functions');
 
-module.exports = async function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
+app.http('httpTrigger1', {
+    methods: ['GET', 'POST'],
+    authLevel: 'anonymous',
+    handler: async (request, context) => {
+        context.log(`HTTP function processed request for URL "${request.url}"`);
 
-    try {
-        // Forward the request to the Express app
-        const response = await fetch(`https://portfolio-manager-1.azurewebsites.net${req.url}`, {
-            method: req.method,
-            headers: req.headers,
-            body: req.rawBody // Assuming the body is already in the correct format
-        });
+        try {
+            // Forward the request to the Express app
+            const response = await fetch(`https://portfolio-manager-1.azurewebsites.net${request.url}`, {
+                method: request.method,
+                headers: request.headers,
+                body: request.rawBody
+            });
 
-        // Retrieve response from the Express app
-        const responseBody = await response.text();
+            // Retrieve response from the Express app
+            const responseBody = await response.text();
 
-        context.res = {
-            // Propagate status and headers from the Express app response
-            status: response.status,
-            headers: response.headers.raw(),
-            body: responseBody
-        };
-    } catch (error) {
-        context.res = {
-            status: 500,
-            body: "Error forwarding request: " + error.message
-        };
+            // Return the response from the Express app
+            return {
+                status: response.status,
+                headers: response.headers.raw(),
+                body: responseBody
+            };
+        } catch (error) {
+            context.log.error(`Error forwarding request: ${error.message}`);
+            return {
+                status: 500,
+                body: `Error forwarding request: ${error.message}`
+            };
+        }
     }
-};
+});
